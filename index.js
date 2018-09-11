@@ -1,9 +1,24 @@
 'use strict'
 
-const {randomBytes} = require('crypto')
+const {randomBytes: cryptoRandomBytes} = require('crypto')
 const {inspect: {custom: customInspectSymbol}} = require('util')
 const padStart = require('string.prototype.padstart')
 const base62 = require('./base62')
+
+function randomBytes (byteLength = PAYLOAD_BYTE_LENGTH, callback) {
+  if (window && window.crypto) {
+    const array = new Uint8Array(byteLength)
+    const randomValues = window.crypto.getRandomValues(array)
+    if (!callback) {
+      return randomValues
+    }
+    return callback(null, randomValues)
+  }
+  if (!callback) {
+    return cryptoRandomBytes(byteLength)
+  }
+  return cryptoRandomBytes(byteLength, callback)
+}
 
 function asyncRandomBytes (size) {
   return new Promise((resolve, reject) => {
